@@ -1,9 +1,9 @@
 /**
  * Copyright (C), 2019-2020, 人生无限公司
- * FileName: ArrayQueue
- * Description: 使用数组来模拟队列
+ * FileName: CircleArrayQueue
+ * Description: 环形的数组队列
  *
- * @created: 2020/3/2 21:34
+ * @created: 2020/3/3 21:41
  * @author reanon
  * @version 1.0.0
  */
@@ -12,17 +12,18 @@ package queue;
 
 import java.util.Scanner;
 
-public class ArrayQueueDemo {
+public class CircleArrayQueue {
     public static void main(String[] args) {
         //创建一个队列
-        ArrayQueue queue;
-        queue = new ArrayQueue(3);
+        CircleArray circleQueue;
+        //这里最大空间设置为4，但是有效数据为3，需要空出一格
+        circleQueue = new CircleArray(4);
         //接收用户输入
         char key = ' ';
         Scanner scanner = new Scanner(System.in);
         boolean loop = true;
 
-        System.out.println("测试队列：");
+        System.out.println("测试环形队列：");
         //输出一个菜单
         while (loop)
         {
@@ -36,17 +37,17 @@ public class ArrayQueueDemo {
             switch (key)
             {
                 case 's':
-                    queue.showQueue();
+                    circleQueue.showQueue();
                     break;
                 case 'a':
                     System.out.print("输入一个数：");
                     int value = scanner.nextInt();
-                    queue.addQueue(value);
+                    circleQueue.addQueue(value);
                     break;
                 case 'g':
                     try
                     {
-                        int res = queue.getQueue();
+                        int res = circleQueue.getQueue();
                         System.out.printf("取出的数据是%d\n", res);
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
@@ -54,7 +55,7 @@ public class ArrayQueueDemo {
                     break;
                 case 'h':
                     try {
-                        int res =queue.headQueue();
+                        int res =circleQueue.headQueue();
                         System.out.printf("队列头的数据是%d",res);
                     }catch (Exception e){
                         System.out.println(e.getMessage());
@@ -72,15 +73,13 @@ public class ArrayQueueDemo {
     }
 }
 
-//数组模拟队列-编写一个ArrayQueue类
 
-class ArrayQueue {
-
-    //
+class CircleArray {
     /**
+     * 模拟环形队列，预留一格方便管理
      * maxSize:表示数组的最大容量s
-     * fornt:队列头
-     * rear:队列尾
+     * fornt:队列头,指向队列的第一个元素
+     * rear:队列尾，指向队列的最后一个元素的后一个位置
      * arr:用于存放数组，模拟队列
      */
     private int maxSize;
@@ -88,23 +87,24 @@ class ArrayQueue {
     private int rear;
     private int[] arr;
 
-    public ArrayQueue(int arrMaxSize) {
+    public CircleArray(int arrMaxSize) {
         /**
          *  创建队列的构造器
          */
         maxSize = arrMaxSize;
+        //创建环形队列
         arr = new int[maxSize];
-        //指向队列头部，指向队列头的前一个位置
-        front = -1;
-        //指向队列尾部，指向队尾的数据（就是队列的最后一个数据）
-        rear = -1;
+        //指向队列头部，指向队列头
+        front = 0;
+        //指向队列尾部的后一个位置
+        rear = 0;
     }
 
     public boolean isFull() {
         /**
          * 判断队列是否满
          */
-        return rear == maxSize - 1;
+        return (rear + 1) % maxSize == front;
     }
 
     public boolean isEmpty() {
@@ -123,9 +123,10 @@ class ArrayQueue {
             System.out.println("队列满，不能加入数据。");
             return;
         }
-        //数据后移
-        rear++;
+        //因为rear指向最后元素的后一个位置，所以直接加入
         arr[rear] = n;
+        //讲rear后移，需要考虑取模
+        rear = (rear + 1) % maxSize;
     }
 
     public int getQueue() {
@@ -137,9 +138,10 @@ class ArrayQueue {
             //通过抛出异常来处理
             throw new RuntimeException("队列为空，不能取数据");
         }
-        //队列头后移
-        front++;
-        return arr[front];
+        //先把front的值保存下来，再后移front指针（后移考虑取模），再返回值
+        int value = arr[front];
+        front = (front + 1) % maxSize;
+        return value;
     }
 
     public void showQueue() {
@@ -150,11 +152,21 @@ class ArrayQueue {
             System.out.println("队列为空，没有数据");
             return;
         }
-        for (int i = 0; i < arr.length; i++) {
-            System.out.printf("arr[%d] = %d\n", i, arr[i]);
+        //
+        int length = size();
+        //从front开始遍历，遍历环形元素的个数
+        for (int i = front,j =0; i < front + length; i++) {
+            //对元素下标取个模
+            j=i%maxSize;
+            System.out.printf("arr[%d] = %d\n", j, arr[j]);
         }
     }
-
+    public int size() {
+        /**
+         * 求出当前队列的有效元素个数
+         */
+        return (rear - front + maxSize) % maxSize;
+    }
     public int headQueue() {
         /**
          * 显示队列的头数据，不是取出数据
@@ -162,6 +174,7 @@ class ArrayQueue {
         if (isEmpty()) {
             throw new RuntimeException("队列为空");
         }
-        return arr[front + 1];
+        //front指向队列的第一个元素
+        return arr[front];
     }
 }
