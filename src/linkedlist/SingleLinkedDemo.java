@@ -20,11 +20,20 @@ public class SingleLinkedDemo {
         HeroNode hero4 = new HeroNode(4, "林冲", "豹子头");
         //创建链表
         SingleLinkedList singleLinkedList = new SingleLinkedList();
-        //加入
-        singleLinkedList.add(hero1);
-        singleLinkedList.add(hero2);
-        singleLinkedList.add(hero3);
-        singleLinkedList.add(hero4);
+
+//        //测试add，按照编号加入
+//        singleLinkedList.add(hero1);
+//        singleLinkedList.add(hero2);
+//        singleLinkedList.add(hero3);
+//        singleLinkedList.add(hero4);
+
+
+        // 测试addByOrder,不按照编号加入
+        singleLinkedList.addByOrder(hero1);
+        singleLinkedList.addByOrder(hero4);
+        singleLinkedList.addByOrder(hero3);
+        singleLinkedList.addByOrder(hero2);
+
         //显示一下链表
         singleLinkedList.list();
     }
@@ -37,6 +46,40 @@ class SingleLinkedList {
      */
 
     private HeroNode head = new HeroNode(0, "", "");
+
+    public void addByOrder(HeroNode heroNode) {
+        /**
+         * 第二种方式添加节点，根据排名（no)将英雄插入到指定的位置
+         * 因为头节点不能动，所以通过一个辅助指针（变量）来找到位置
+         * 而且因为是单链表，所以需要找到要加入位置的前一个节点
+         */
+        HeroNode temp = head;
+        //标志添加的编号是否存在，默认为false
+        boolean flag = false;
+        while (true) {
+            //当temp已经在链表的最后时
+            if (temp.next == null) {
+                break;
+            }
+            //位置找到，就在temp的后面插入
+            if (temp.next.no > heroNode.no) {
+                break;
+            } else if (temp.next.no == heroNode.no) {
+                //希望添加的heroNode已经存在，说明编号存在
+                flag = true;
+            }
+            //后移，遍历当前的链表
+            temp = temp.next;
+        }
+        //判断flag的值
+        if (flag) {
+            System.out.printf("准备插入的英雄编号%d已经存在，不能添加。\n ",heroNode.no);
+        }else{
+            //插入到链表中，temp的后面
+            heroNode.next=temp.next;
+            temp.next=heroNode;
+        }
+    }
 
     public void add(HeroNode heroNode) {
         /**
@@ -107,6 +150,6 @@ class HeroNode {
         return "HeroNode{" +
                 "no=" + no +
                 ", name='" + name + '\'' +
-                ", nickname='" + nickname + '\'';
+                ", nickname='" + nickname + '\''+'}';
     }
 }
